@@ -1,0 +1,156 @@
+CREATE DATABASE sqlmain;
+use sqlmain;
+CREATE TABLE Students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    reg_no VARCHAR(20) NOT NULL UNIQUE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50),
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    dob DATE NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    phone VARCHAR(15),
+    address VARCHAR(255),
+    city VARCHAR(50),
+    state VARCHAR(50),
+    postal_code VARCHAR(10),
+    country VARCHAR(50) DEFAULT 'India',
+    admission_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    course_id INT,
+    year_of_study INT CHECK (year_of_study BETWEEN 1 AND 5),
+    gpa DECIMAL(3,2) CHECK (gpa >= 0.00 AND gpa <= 10.00),
+    is_active BOOLEAN DEFAULT TRUE,
+    remarks TEXT
+);
+INSERT INTO Students 
+(reg_no, first_name, last_name, gender, dob, email, phone, address, city, state, postal_code, course_id, year_of_study, gpa, is_active, remarks)
+VALUES
+('REG2025001', 'Aarav', 'Sharma', 'Male', '2004-05-12', 'aarav.sharma@example.com', '9876543210', '123 MG Road', 'Bengaluru', 'Karnataka', '560001', 1, 2, 8.75, TRUE, 'Excellent performance'),
+('REG2025002', 'Priya', 'Verma', 'Female', '2003-11-20', 'priya.verma@example.com', '9876501234', '45 Park Street', 'Chennai', 'Tamil Nadu', '600001', 2, 3, 9.10, TRUE, 'Class topper'),
+('REG2025003', 'Rahul', 'Kumar', 'Male', '2002-08-15', 'rahul.kumar@example.com', '9876005678', '12 Sector 18', 'Delhi', 'Delhi', '110018', 1, 4, 7.20, TRUE, 'Needs improvement in coding'),
+('REG2025004', 'Sneha', 'Patel', 'Female', '2005-01-05', 'sneha.patel@example.com', '9876123456', '78 Lake View', 'Ahmedabad', 'Gujarat', '380015', 3, 1, 8.90, TRUE, 'Active in cultural activities'),
+('REG2025005', 'Aditya', 'Nair', 'Male', '2003-03-30', 'aditya.nair@example.com', '9876345678', '23 Marine Drive', 'Kochi', 'Kerala', '682001', 2, 3, 9.50, TRUE, 'Excellent in academics and sports'),
+('REG2025006', 'Meera', 'Reddy', 'Female', '2004-07-22', 'meera.reddy@example.com', '9876987654', '56 Jubilee Hills', 'Hyderabad', 'Telangana', '500033', 4, 2, 7.80, TRUE, 'Good participation in projects');
+select * from Students;
+
+CREATE DATABASE primaryAndForeignKey;
+USE primaryAndForeignKey;
+CREATE TABLE Students(
+student_id INT PRIMARY KEY,
+name VARCHAR(20) NOT NULL,
+email VARCHAR(30) UNIQUE,
+age INT CHECK (age>=18),
+gender VARCHAR(20) DEFAULT 'Not Specified');
+CREATE TABLE Courses(
+course_id INT PRIMARY KEY,
+course_name VARCHAR(50) NOT NULL,
+fee INT CHECK(fee>0),
+duration INT DEFAULT '6');
+CREATE TABLE Enrollments(
+enroll_id INT PRIMARY KEY,
+student_id INT,
+course_id INT,
+Grade VARCHAR(10),
+CONSTRAINT fk1 FOREIGN KEY (student_id) REFERENCES Students(student_id),
+Constraint fk2 FOREIGN KEY (course_id) REFERENCES Courses(course_id));
+
+insert into Students values
+(1,'Arun','arun@gmail.com',20,'male'),
+(2,'Priya','priya@gmail.com',22,'female'),
+(3,'Kiran','kiran@gmail.com',19,'');
+
+insert into Courses values
+(101,'DB',15000,6),
+(102,'Java Programming',20000,4);
+
+insert into Enrollments values
+(1001,1,101,'A'),
+(1002,2,102,'B');
+
+select distinct name,email from Students;
+select name,age from Students where age between 20 and 22;
+select * from Students where name like 'A%';
+select * from Students where email is not null;
+select s.name as studnetsname ,c.course_name as coursename, e.grade as Grade  from Students s 
+Join Enrollments e on s.student_id=e.student_id
+Join Courses c on e.course_id =  c.course_id
+Order by s.name;
+ 
+select course_name, fee, fee*1.1 as Increasefee from Courses;
+
+select s.name,c.course_name from Students s 
+join Enrollments e on s.student_id=e.student_id
+join Courses c on e.course_id=c.course_id
+where c.course_name in('DB');
+
+select s.name,e.grade, 
+CASE
+WHEN e.grade='A' THEN 'Excellentg'
+when e.grade='B' then 'Good'
+else 'Unknown'
+end as performance
+from Students s
+join Enrollments e on s.student_id=e.student_id;
+
+select name, age from Students where age<>20;
+select * from Courses order by fee desc limit 2;
+
+alter table Students add column Phonenumber varchar(100);
+alter table Courses modify duration varchar(10);
+alter table Courses change fee coursefee int;
+alter table Courses rename column coursefee to fee;
+ALTER TABLE Courses 
+RENAME COLUMN coursefee TO fee;
+SELECT VERSION();
+alter table Enrollments rename to Enrollment;
+alter table Students modify name varchar(20) not null;
+alter table Courses add constraint coursefee check(coursefee>1000);
+alter table Students drop column age;
+alter table Courses drop constraint coursefee;
+show create table Courses;
+alter table Enrollment add constraint fkey foreign key (student_id) references Students(student_id);
+ alter table Students alter gender set default 'not';
+ -- Increase fee of all courses by 10%
+UPDATE Courses
+SET coursefee = coursefee * 1.1 where coursefee>1000 limit 10; 
+UPDATE Courses
+SET coursefee = coursefee * 1.1;
+
+-- Update Priya's grade from 'B' to 'A'
+SET SQL_SAFE_UPDATES = 0;
+
+UPDATE Enrollment e
+JOIN Students s ON e.student_id = s.student_id
+SET e.grade = 'A'
+WHERE s.name = 'Priya'
+  AND e.grade = 'B';
+
+SET SQL_SAFE_UPDATES = 1;
+
+-- Update Kiran's gender to 'Male' if Not Specified
+UPDATE Students
+SET gender = 'Male'
+WHERE name = 'Kiran' AND gender = 'Not Specified';
+
+-- Change course name DB to Database Systems
+UPDATE Courses
+SET course_name = 'Database Systems'
+WHERE course_name = 'DB';
+
+-- Delete student record where student_id = 4
+DELETE FROM Students
+WHERE student_id = 3;
+
+-- Delete enrollments where grade = 'C'
+DELETE FROM Enrollment
+WHERE grade = 'B';
+
+-- Delete courses with no enrollments
+DELETE FROM Courses
+WHERE course_id NOT IN (SELECT DISTINCT course_id FROM Enrollment);
+
+
+
+
+
+
+
